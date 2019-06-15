@@ -29,6 +29,12 @@ import isPlainObject from './utils/isPlainObject'
  * and subscribe to changes.
  */
 export default function createStore(reducer, preloadedState, enhancer) {
+  /**
+   * createStore 参数的判断
+   * reducer 是必须的，保证是要函数
+   * 只传两个参数的时候，第二个参数被当成 enhancer 处理，所以必须是函数
+   * 传三个参数或更多的时候，保证只有第三个参数是 enhancer，也就是只有第二个、第四个都不是函数
+   */
   if (
     (typeof preloadedState === 'function' && typeof enhancer === 'function') ||
     (typeof enhancer === 'function' && typeof arguments[3] === 'function')
@@ -45,6 +51,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
     preloadedState = undefined
   }
 
+  // 有 enhancer 时，返回 enhancer 处理过后的 store
   if (typeof enhancer !== 'undefined') {
     if (typeof enhancer !== 'function') {
       throw new Error('Expected the enhancer to be a function.')
@@ -53,6 +60,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
     return enhancer(createStore)(reducer, preloadedState)
   }
 
+  // 保证 reducer 是个函数
   if (typeof reducer !== 'function') {
     throw new Error('Expected the reducer to be a function.')
   }
@@ -89,7 +97,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
           'Pass it down from the top reducer instead of reading it from the store.'
       )
     }
-
+    // getState 直接返回当前 state
     return currentState
   }
 
@@ -130,11 +138,13 @@ export default function createStore(reducer, preloadedState, enhancer) {
       )
     }
 
+    // 标记订阅状态
     let isSubscribed = true
 
     ensureCanMutateNextListeners()
     nextListeners.push(listener)
 
+    // 订阅的返回值是个函数，用来取消订阅
     return function unsubscribe() {
       if (!isSubscribed) {
         return
@@ -146,10 +156,11 @@ export default function createStore(reducer, preloadedState, enhancer) {
             'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.'
         )
       }
-
+      // 标记为未订阅
       isSubscribed = false
 
       ensureCanMutateNextListeners()
+      // 找到需要取消订阅的 listener，通过 splice 从数组中删除
       const index = nextListeners.indexOf(listener)
       nextListeners.splice(index, 1)
     }
