@@ -1,3 +1,5 @@
+// 这个方法的做用，其实就是一个简写的调用方法，方便使用
+// 结果就是返回一个函数: `dispatch(actionCreator(xxx))`
 function bindActionCreator(actionCreator, dispatch) {
   return function() {
     return dispatch(actionCreator.apply(this, arguments))
@@ -26,6 +28,7 @@ function bindActionCreator(actionCreator, dispatch) {
  * function.
  */
 export default function bindActionCreators(actionCreators, dispatch) {
+  // actionCreators 是函数，返回的也是一个封装的函数
   if (typeof actionCreators === 'function') {
     return bindActionCreator(actionCreators, dispatch)
   }
@@ -39,6 +42,7 @@ export default function bindActionCreators(actionCreators, dispatch) {
     )
   }
 
+  // actionCreators 是对象时，把每个对象的值封装成带 dispatch 的函数，然后返回新的对象
   const boundActionCreators = {}
   for (const key in actionCreators) {
     const actionCreator = actionCreators[key]
